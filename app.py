@@ -178,6 +178,18 @@ def studentCheckin(timetable_event_id,student_id):
 
 
 
+# API to Fetch The List of Students Enrolled on the Module 
+@app.get("/getAllStudentsByModule/<module_id>")
+def getAllStudents(module_id):
+  try:
+   modules = module.query.filter_by(module_id = module_id).all()
+   course_code = modules[0].course_code
+   students =student.query.filter_by(course_code = course_code).all()
+   return students_schema.jsonify(students)
+  except Exception as e: 
+   return jsonify({"message":str(e)}), StatusCode.HTTP_500_INTERNAL_SERVER_ERROR
+
+
 
 
 
