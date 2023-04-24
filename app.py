@@ -144,6 +144,37 @@ def checkin_by_tutor(timetable_event_id,student_id,attendance_status):
       return attendance_schema.jsonify(new_user)
     else:
        return jsonify({"message":"Invalid checkin"}), StatusCode.HTTP_401_UNAUTHORIZED
+    
+
+ #---------------------------------GRT APIs for Student Checkin-----------------------------------------------------------------    
+@app.post("/studentcheckin/<timetable_event_id>/<student_id>")
+def studentCheckin(timetable_event_id,student_id):
+  timetable = timetable_event.query.filter_by(timetable_event_id= timetable_event_id).all()
+  lecture_day = timetable[0].timetable_event_day
+  start_time = timetable[0].timetable_start_time
+  end_time = timetable[0].timetable_end_time
+  start_datetime_obj= (datetime.datetime.min + start_time).time()
+  end_datetime_obj = (datetime.datetime.min + end_time).time()
+#get current time and date
+  today = date.today() 
+  new_user = any
+  now = datetime.datetime.now()
+  current_time = now.time()
+#compare days 
+  if(today==lecture_day and current_time >= start_datetime_obj and current_time<= end_datetime_obj):
+    new_user = attendance (
+    attendance_date = lecture_day,
+    timetable_event_id = timetable_event_id,
+    student_id = student_id,
+    attendance_status = 'P'   
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    print ("Record added:")
+    return attendance_schema.jsonify(new_user)
+  else:
+   return jsonify({"message":"Invalid checkin"}), StatusCode.HTTP_401_UNAUTHORIZED
+    
 
 
 
