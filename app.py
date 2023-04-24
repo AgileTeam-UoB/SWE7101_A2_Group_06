@@ -86,12 +86,68 @@ def getAllModules(Taught_by):
 
 
 
+@app.get("/getAllModulesCurrentSem/<Taught_by>")
+def getAllModulesCurrentSem(Taught_by):
+  Semester_ID= getCurrentSem()
+  try:
+   modules = module.query.filter_by(Taught_by= Taught_by, Semester_ID= Semester_ID).all()
+   return modules_schema.jsonify(modules)
+  except Exception as e: 
+   return jsonify({"message":str(e)}), StatusCode.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+def getCurrentSem():
+ ## current date and time
+  today = date.today() 
+  current_sem = 1
+ # query semster table select * 
+  sem = semester.query.all()
+  # current sem currrent date > start date & < enddate
+  for idx, x in enumerate(sem): 
+   if sem[idx].start_date < today  and  today <  sem[idx].end_date :
+     current_sem = sem[idx].semester_name
+  return current_sem
 
-
-
-
-
-  
 #---------------------------------PUT APIs----------------------------------------------------------------- 
+@app.put("/checkin_by_tutor/<timetable_event_id>/<student_id>/<attendance_status>")
+def checkin_by_tutor(timetable_event_id,student_id,attendance_status):
+  timetable = timetable_event.query.filter_by(timetable_event_id= timetable_event_id).all()
+  lecture_day = timetable[0].timetable_event_day
+  start_time = timetable[0].timetable_start_time
+  end_time = timetable[0].timetable_end_time
+  start_datetime_obj= (datetime.datetime.min + start_time).time()
+  end_datetime_obj = (datetime.datetime.min + end_time).time()
+#get current time and date
+  today = date.today() 
+  new_user = any
+  now = datetime.datetime.now()
+  current_time = now.time()
+  print(attendance_status)
+#compare days 
+  if(today==lecture_day and current_time >= start_datetime_obj and current_time<= end_datetime_obj):
+    if(attendance_status== "P" or attendance_status== "A" or attendance_status== "N" or attendance_status== "C" or attendance_status== "O" ):
+      attendance_data = attendance.query.filter_by(timetable_event_id= timetable_event_id,student_id=student_id).one_or_none()
+      print(attendance_schema.jsonify(attendance_data))
+      if attendance_data:
+        attendance_data.attendance_status = attendance_status
+        db.session.merge(attendance_data)
+      else:
+        new_user = attendance (
+        attendance_date = lecture_day,
+        timetable_event_id = timetable_event_id,
+        student_id = student_id,
+        attendance_status = attendance_status 
+        )
+        db.session.add(new_user)
+      db.session.commit()
+      print ("Record added:")
+      return attendance_schema.jsonify(new_user)
+    else:
+       return jsonify({"message":"Invalid checkin"}), StatusCode.HTTP_401_UNAUTHORIZED
+
+
+
+
+
+
+
