@@ -190,6 +190,26 @@ def getAllStudents(module_id):
    return jsonify({"message":str(e)}), StatusCode.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+@app.get("/getPreviousAttendance/<student_id>")
+def getPreviousAttendance(student_id):
+  try:
+   attendances = attendance.query.filter_by(student_id= student_id).all()
+   return attendances_schema.jsonify(attendances)
+  except Exception as e: 
+   return jsonify({"message":str(e)}), StatusCode.HTTP_500_INTERNAL_SERVER_ERROR
+
+def getCurrentSem():
+ ## current date and time
+  today = date.today() 
+  current_sem = 1
+ # query semster table select * 
+  sem = semester.query.all()
+  # current sem currrent date > start date & < enddate
+  for idx, x in enumerate(sem): 
+   if sem[idx].start_date < today  and  today <  sem[idx].end_date :
+     current_sem = sem[idx].semester_name
+  return current_sem
+
 
 
 
